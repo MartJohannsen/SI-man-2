@@ -30,16 +30,10 @@ public class Receiver
             {
                 from("direct:start")
                         .to("jms:queue:Request");
-            }
-        });
-
-        context.addRoutes(new RouteBuilder()
-        {
-            @Override
-            public void configure() throws Exception
-            {
                 from("direct:starts")
                         .to("jms:queue:Reply");
+                from("direct:invalid")
+                        .to("jms:queue:Invalid");
             }
         });
 
@@ -50,25 +44,42 @@ public class Receiver
         Message string = consumerTemplate.receive("jms:queue:Request").getIn();
         System.out.println("From request queue: " + string.getBody().toString());
 
-        interpretCommand(string.getBody().toString());
+        boolean valid = interpretCommand(string.getBody().toString());
 
         ProducerTemplate producerTemplate = context.createProducerTemplate();
 
-        System.out.println("To reply queue: " + userList.toString() + " REPLY");
+        if(valid)
+        {
+            System.out.println("To reply queue: " + userList.toString() + " REPLY");
 
-        producerTemplate.sendBody("direct:starts", userList.toString());
+            producerTemplate.sendBody("direct:starts", userList.toString());
+        }
+        else
+        {
+            producerTemplate.sendBody("direct:invalid", "Command is Invalid");
+        }
     }
 
-    public static void interpretCommand(String message)
+    public static boolean interpretCommand(String message)
     {
         String [] arrOfStr = message.split(",");
         String command = arrOfStr[0];
         String userName = arrOfStr[1];
 
         if (command.equalsIgnoreCase("createuser"))
+        {
             createUser(userName);
-        if (command.equalsIgnoreCase("deleteuser"))
+            return true;
+        }
+        else if (command.equalsIgnoreCase("deleteuser"))
+        {
             deleteUser(userName);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public static void createUser(String userName)

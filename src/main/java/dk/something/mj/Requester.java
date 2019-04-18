@@ -2,6 +2,7 @@ package dk.something.mj;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
@@ -24,15 +25,16 @@ public class Requester
             public void configure() throws Exception
             {
                 from("direct:start")
-                        .to("jms:queue:Request");
+                        .to(ExchangePattern.InOnly,"jms:queue:Request?useMessageIDAsCorrelationID=true");
             }
         });
 
         context.start();
 
-        CommandRequest commandRequest = new CommandRequest("CreateUser", "Andreas");
+        CommandRequest commandRequest = new CommandRequest("UpdateUser", "Andreas");
 
         ProducerTemplate producerTemplate = context.createProducerTemplate();
+
         producerTemplate.sendBody("direct:start", commandRequest.toString());
 
     }
