@@ -1,0 +1,13 @@
+<route errorHandlerRef="dlc" autoStartup="true" inheritErrorHandler="true" id="route2" xmlns="http://camel.apache.org/schema/http4">
+    <from uri="activemq:test"/>
+    <setBody inheritErrorHandler="true" id="setBody2">
+        <simple>name=${body}</simple>
+    </setBody>
+    <setHeader headerName="Content-Type" inheritErrorHandler="true" id="setHeader3">
+        <constant>application/x-www-form-urlencoded;</constant>
+    </setHeader>
+    <setHeader headerName="CamelHttpMethod" inheritErrorHandler="true" id="setHeader4">
+        <constant>GET</constant>
+    </setHeader>
+    <to uri="http://127.0.0.1:8000/pizza/placeOrder/" inheritErrorHandler="true" id="to2"/>
+</route>
